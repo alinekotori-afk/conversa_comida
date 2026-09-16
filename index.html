@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conversação sobre Alimentação - Flashcards Interativos</title>
+  <style>
+    :root {
+      --primary: #d97706;
+      --primary-dark: #b45309;
+      --bg: #fffbeb;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #fde68a;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    header {
+      text-align: center;
+      max-width: 760px;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+      color: #78350f;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .top-controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      width: 100%;
+      max-width: 760px;
+    }
+
+    .btn-toggle-lang {
+      background-color: #78350f;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      transition: all 0.2s ease;
+    }
+
+    .btn-toggle-lang:hover {
+      background-color: #92400e;
+      transform: translateY(-1px);
+    }
+
+    .category-filter {
+      padding: 0.6rem 1rem;
+      border-radius: 50px;
+      border: 1px solid var(--border);
+      background-color: #fff;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .btn-info {
+      background: transparent;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      padding: 0.6rem 1rem;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-info:hover {
+      background-color: #fef3c7;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 100%;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal h2 {
+      font-size: 1.3rem;
+      margin-bottom: 0.75rem;
+      color: #78350f;
+    }
+
+    .modal p {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #334155;
+      margin-bottom: 0.8rem;
+    }
+
+    .modal .close-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      float: right;
+      margin-top: 0.5rem;
+    }
+
+    .card-scene {
+      width: 100%;
+      max-width: 620px;
+      height: 330px;
+      perspective: 1000px;
+      margin-bottom: 1rem;
+      cursor: pointer;
+    }
+
+    .card {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .card.is-flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1.5rem;
+      box-sizing: border-box;
+    }
+
+    .card-back {
+      transform: rotateY(180deg);
+      background-color: #fafafa;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .card-badge {
+      background: #fef3c7;
+      color: var(--primary-dark);
+      padding: 0.25rem 0.7rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      flex-grow: 1;
+      padding: 0.5rem 0;
+    }
+
+    .card-text {
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1.45;
+      margin-bottom: 0.5rem;
+      color: #1e293b;
+    }
+
+    .card-hint {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .btn-speak {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 0.3rem;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+
+    .btn-speak:hover {
+      background: #fef3c7;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .btn-nav {
+      background: white;
+      border: 1px solid var(--border);
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: all 0.2s;
+    }
+
+    .btn-nav:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .btn-flip {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.2);
+      transition: all 0.2s;
+    }
+
+    .btn-flip:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-shuffle {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 0.75rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    .btn-shuffle:hover {
+      background: #fef3c7;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      max-width: 620px;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .counter-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Perguntas de Conversação: Alimentação & Culinária</h1>
+    <p class="subtitle">Prática oral e vocabulário com perguntas individuais sobre rotinas, culinária e hábitos</p>
+  </header>
+
+  <div class="top-controls">
+    <button class="btn-toggle-lang" id="btn-toggle-direction" onclick="toggleLanguageDirection()">
+      <span id="lang-direction-label">🇧🇷 Português ➔ 🇺🇸 Inglês</span>
+    </button>
+    <select class="category-filter" id="category-select" onchange="filterCategory()">
+      <option value="ALL">Todas as Seções (1 a 5)</option>
+      <option value="1. Rotinas Diárias e Refeições">1. Rotinas Diárias e Refeições</option>
+      <option value="2. Culinária e Habilidades na Cozinha">2. Culinária e Habilidades na Cozinha</option>
+      <option value="3. Cozinhas do Mundo e Preferências">3. Cozinhas do Mundo e Preferências</option>
+      <option value="4. Saúde, Nutrição e Hábitos">4. Saúde, Nutrição e Hábitos</option>
+      <option value="5. Restaurantes, Fast-Food e Experiências">5. Restaurantes, Fast-Food e Experiências</option>
+    </select>
+    <button class="btn-info" onclick="toggleModal(true)">💡 Dicas de Conversação</button>
+  </div>
+
+  <div class="card-scene" onclick="flipCard()">
+    <div class="card" id="flashcard">
+      <div class="card-face card-front">
+        <div class="card-header">
+          <span class="card-badge" id="front-category">Categoria</span>
+          <span id="front-flag">🇧🇷 Frente</span>
+        </div>
+        <div class="card-body">
+          <div class="card-text" id="front-text">Pergunta</div>
+          <div class="card-hint" id="front-hint">Dica de resposta / vocabulário</div>
+        </div>
+        <div class="card-footer">
+          <span>Clique para virar ↺</span>
+          <button class="btn-speak" onclick="speakText(event, 'front')" title="Ouvir pronúncia">🔊</button>
+        </div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-header">
+          <span class="card-badge" id="back-category">Categoria</span>
+          <span id="back-flag">🇺🇸 Verso</span>
+        </div>
+        <div class="card-body">
+          <div class="card-text" id="back-text">Tradução</div>
+          <div class="card-hint" id="back-hint">Tradução / Vocabulário</div>
+        </div>
+        <div class="card-footer">
+          <span>Clique para virar ↺</span>
+          <button class="btn-speak" onclick="speakText(event, 'back')" title="Ouvir pronúncia">🔊</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+  <div class="counter-text" id="card-counter">1 de 1</div>
+
+  <div class="controls" style="margin-top: 1rem;">
+    <button class="btn-nav" onclick="prevCard()" title="Anterior (←)">‹</button>
+    <button class="btn-flip" onclick="flipCard()">Virar Cartão</button>
+    <button class="btn-nav" onclick="nextCard()" title="Próximo (→)">›</button>
+    <button class="btn-shuffle" onclick="shuffleCards()" title="Embaralhar">🔀</button>
+  </div>
+
+  <div class="modal" id="info-modal" onclick="if(event.target === this) toggleModal(false)">
+    <div class="modal-content">
+      <h2>Como Praticar Conversação com este Deck</h2>
+      <p>• <strong>Cada cartão contém apenas uma pergunta</strong> para focar na resposta individual do aluno sem sobrecarga cognitiva.</p>
+      <p>• Use o botão <strong>🇧🇷 ➔ 🇺🇸 / 🇺🇸 ➔ 🇧🇷</strong> para decidir se o aluno lê em português e formula a resposta, ou lê em inglês e traduz a pergunta antes de responder.</p>
+      <p>• Incentive respostas completas utilizando os tempos verbais adequados: <em>Presente do Indicativo</em> (para hábitos), <em>Pretérito Perfeito</em> (para refeições passadas) e <em>Pretérito Imperfeito</em> (para lembranças de infância).</p>
+      <p>• Atalhos de teclado: <strong>Barra de Espaço</strong> para virar o cartão; <strong>Seta Direita (→)</strong> para avançar e <strong>Seta Esquerda (←)</strong> para voltar.</p>
+      <button class="close-btn" onclick="toggleModal(false)">Fechar</button>
+    </div>
+  </div>
+
+  <script>
+    const fullDeck = [
+      // ==========================================
+      // SEÇÃO 1: ROTINAS DIÁRIAS E REFEIÇÕES
+      // ==========================================
+      {
+        pt: "Sobre quantos alimentos de cores diferentes você comeu no jantar ontem à noite?",
+        en: "About how many different colored foods did you eat for dinner last night?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Pretérito Perfeito: 'Eu comi...'",
+        hintEn: "Past action: 'I ate...'"
+      },
+      {
+        pt: "A que horas você costuma fazer suas refeições?",
+        en: "What time do you usually have your meals?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Presente habitual: 'Eu costumo comer às...'",
+        hintEn: "Habitual present: 'I usually eat at...'"
+      },
+      {
+        pt: "A que horas você toma café da manhã?",
+        en: "What time do you eat breakfast?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Horário matinal",
+        hintEn: "Morning meal schedule"
+      },
+      {
+        pt: "A que horas você almoça?",
+        en: "What time do you have lunch?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Horário do almoço",
+        hintEn: "Lunch schedule"
+      },
+      {
+        pt: "A que horas você janta?",
+        en: "What time do you have dinner?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Horário noturno",
+        hintEn: "Dinner schedule"
+      },
+      {
+        pt: "Você toma café da manhã todos os dias?",
+        en: "Do you eat breakfast every day?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Hábito diário: 'Sim, eu tomo...' / 'Não, eu não tomo...'",
+        hintEn: "Daily habit question"
+      },
+      {
+        pt: "Você costuma pular o café da manhã?",
+        en: "Do you usually skip breakfast?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Expressão: pular refeição (skip a meal)",
+        hintEn: "Expression: to skip breakfast"
+      },
+      {
+        pt: "Se você pula o café da manhã, com que frequência e por quê?",
+        en: "If you skip breakfast, how often and why?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Explicação de rotina e motivo",
+        hintEn: "Reasoning and frequency"
+      },
+      {
+        pt: "O que você costuma comer no café da manhã?",
+        en: "What do you usually eat for breakfast?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Alimentos matinais: frutas, pão, queijo, etc.",
+        hintEn: "Breakfast food vocabulary"
+      },
+      {
+        pt: "O que você tomou no café da manhã hoje?",
+        en: "What did you have for breakfast today?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Pretérito Perfeito: 'Hoje eu comi/bebi...'",
+        hintEn: "Simple past: 'Today I had...'"
+      },
+      {
+        pt: "O que você costuma almoçar?",
+        en: "What do you usually have for lunch?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Refeição do meio-dia",
+        hintEn: "Midday meal routine"
+      },
+      {
+        pt: "O que você almoçou ontem?",
+        en: "What did you have for lunch yesterday?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Pretérito Perfeito: 'Ontem eu almocei...'",
+        hintEn: "Simple past: 'Yesterday I ate...'"
+      },
+      {
+        pt: "O que você comeu até agora hoje?",
+        en: "What have you eaten so far today?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Alimentos ingeridos até o momento",
+        hintEn: "Food eaten until now"
+      },
+      {
+        pt: "O que você gosta de comer no jantar?",
+        en: "What do you like to eat for dinner?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Preferências para a noite",
+        hintEn: "Evening food preferences"
+      },
+      {
+        pt: "O que você jantou ontem à noite?",
+        en: "What did you have for dinner last night?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Pretérito Perfeito: 'Ontem à noite eu jantei...'",
+        hintEn: "Simple past: 'Last night I ate...'"
+      },
+      {
+        pt: "Onde você costuma jantar?",
+        en: "Where do you usually have dinner?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Locais: em casa, na sala, fora",
+        hintEn: "Dinner locations"
+      },
+      {
+        pt: "Onde você costuma tomar café da manhã?",
+        en: "Where do you usually have breakfast?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Locais: na cozinha, na padaria",
+        hintEn: "Breakfast locations"
+      },
+      {
+        pt: "Onde você costuma almoçar?",
+        en: "Where do you usually have lunch?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Locais: no trabalho, em casa, no restaurante",
+        hintEn: "Lunch locations"
+      },
+      {
+        pt: "Com quem você costuma jantar?",
+        en: "Who do you usually have dinner with?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Companhia: sozinho(a), com a família, amigos",
+        hintEn: "Company during dinner"
+      },
+      {
+        pt: "Você sempre janta com sua família?",
+        en: "Do you always have dinner with your family?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Frequência: sempre, às vezes, nunca",
+        hintEn: "Frequency with family"
+      },
+      {
+        pt: "Quantas refeições por dia você costuma fazer?",
+        en: "How many meals a day do you usually eat?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Número de refeições diárias",
+        hintEn: "Number of meals daily"
+      },
+      {
+        pt: "Quantas refeições por dia você acha que devem ser feitas?",
+        en: "How many meals a day do you think should be eaten?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Opinião pessoal sobre nutrição",
+        hintEn: "Personal opinion on meal frequency"
+      },
+      {
+        pt: "Você bebeu café esta manhã?",
+        en: "Did you drink coffee this morning?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Pretérito Perfeito: 'Sim, eu bebi...' / 'Não, não bebi...'",
+        hintEn: "Simple past of drink"
+      },
+      {
+        pt: "Você toma café no café da manhã?",
+        en: "Do you drink coffee at breakfast?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Hábito de beber café",
+        hintEn: "Coffee habit"
+      },
+      {
+        pt: "Você bebe leite todos os dias?",
+        en: "Do you drink milk every day?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Consumo diário de leite",
+        hintEn: "Daily milk consumption"
+      },
+      {
+        pt: "Você bebe chá todos os dias?",
+        en: "Do you drink tea every day?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Consumo diário de chá",
+        hintEn: "Daily tea consumption"
+      },
+      {
+        pt: "Você come pão todos os dias?",
+        en: "Do you eat bread every day?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Consumo diário de pão",
+        hintEn: "Daily bread consumption"
+      },
+      {
+        pt: "Com que frequência você come pão?",
+        en: "How often do you eat bread?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Expressões: todos os dias, às vezes, raramente",
+        hintEn: "Frequency expression"
+      },
+      {
+        pt: "Você come arroz todos os dias?",
+        en: "Do you eat rice every day?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Consumo do prato tradicional brasileiro",
+        hintEn: "Rice consumption habit"
+      },
+      {
+        pt: "Quanto de arroz você come?",
+        en: "How much rice do you eat?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Quantidade: muito, pouco, uma porção",
+        hintEn: "Portion size inquiry"
+      },
+      {
+        pt: "O que você come com mais frequência: arroz, pão ou batata?",
+        en: "What do you eat most often: rice, bread, or potatoes?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Comparação de carboidratos favoritos",
+        hintEn: "Carbohydrate comparison"
+      },
+      {
+        pt: "Você come fruta todos os dias?",
+        en: "Do you eat fruit every day?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Hábito saudável",
+        hintEn: "Healthy daily habit"
+      },
+      {
+        pt: "Com que frequência você come fruta fresca?",
+        en: "How often do you eat fresh fruit?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Frequência de consumo de frutas frescas",
+        hintEn: "Fresh fruit intake frequency"
+      },
+      {
+        pt: "De que tipo de fruta você mais gosta?",
+        en: "What kind of fruit do you like best?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Frutas: maçã, banana, laranja, manga, etc.",
+        hintEn: "Favorite fruits"
+      },
+      {
+        pt: "Qual fruta você come com mais frequência?",
+        en: "Which fruit do you eat most often?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Fruta mais frequente na sua dieta",
+        hintEn: "Most frequently eaten fruit"
+      },
+      {
+        pt: "Você sempre come legumes e verduras?",
+        en: "Do you always eat vegetables and greens?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Consumo de vegetais e hortaliças",
+        hintEn: "Vegetable intake habit"
+      },
+      {
+        pt: "De que tipo de legumes você gosta?",
+        en: "What kind of vegetables do you like?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Cenoura, abóbora, batata, tomate, etc.",
+        hintEn: "Types of vegetables"
+      },
+      {
+        pt: "De qual legume você mais gosta?",
+        en: "Which vegetable do you like the most?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Legume predileto",
+        hintEn: "Top favorite vegetable"
+      },
+      {
+        pt: "Você come carne bovina?",
+        en: "Do you eat beef?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Consumo de carne vermelha",
+        hintEn: "Beef consumption"
+      },
+      {
+        pt: "Com que frequência você come bife?",
+        en: "How often do you eat steak?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Frequência de consumo de bife",
+        hintEn: "Steak consumption frequency"
+      },
+      {
+        pt: "Qual é o seu tipo favorito de carne?",
+        en: "What is your favorite type of meat?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Carne bovina, frango, suína, peixe",
+        hintEn: "Favorite meat"
+      },
+      {
+        pt: "Você prefere peixe ou carne?",
+        en: "Do you prefer fish or meat?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Preferência alimentar",
+        hintEn: "Dietary preference: fish vs. meat"
+      },
+      {
+        pt: "Qual é o seu peixe favorito?",
+        en: "What is your favorite fish?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Salmão, tilápia, bacalhau, atum, etc.",
+        hintEn: "Favorite type of fish"
+      },
+      {
+        pt: "Que tipo de bebidas você costuma beber?",
+        en: "What kind of drinks do you usually drink?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Água, sucos naturais, chá, café",
+        hintEn: "Beverage habits"
+      },
+      {
+        pt: "O que você gosta de beber?",
+        en: "What do you like to drink?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Bebidas preferidas",
+        hintEn: "Favorite beverages"
+      },
+      {
+        pt: "Qual é a sua bebida favorita no verão?",
+        en: "What is your favorite drink in the summer?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Bebidas refrescantes: água de coco, suco gelado",
+        hintEn: "Summer drinks"
+      },
+      {
+        pt: "Que tipo de comida você come entre as refeições?",
+        en: "What kind of food do you eat between meals?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Lanches intermediários / petiscos (snacks)",
+        hintEn: "Snacks between meals"
+      },
+      {
+        pt: "O que você come quando se sente triste?",
+        en: "What do you eat when you feel sad?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Comida de conforto (comfort food)",
+        hintEn: "Emotional eating / comfort food"
+      },
+      {
+        pt: "O quanto você come quando está triste ou feliz?",
+        en: "How much do you eat when you are sad or happy?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Relação emocional com o apetite",
+        hintEn: "Appetite and emotions"
+      },
+      {
+        pt: "Você já achou que a comida era sua única amiga?",
+        en: "Have you ever thought that food was your only friend?",
+        category: "1. Rotinas Diárias e Refeições",
+        hintPt: "Reflexão sobre relação com comida",
+        hintEn: "Deep conversational question"
+      },
+
+      // ==========================================
+      // SEÇÃO 2: CULINÁRIA E HABILIDADES NA COZINHA
+      // ==========================================
+      {
+        pt: "Você é um bom cozinheiro / uma boa cozinheira?",
+        en: "Are you a good cook?",
+        category: "2. Culinária e Habilidades na Cozinha",
+        hintPt: "Habilidades culinárias pessoais",
+        hintEn: "Cooking skills"
+      },
+      {
+        pt: "Você sabe cozinhar bem?",
+        en: "Do you know how to cook well?",
+        category: "2. Culinária e Habilidades na Cozinha",
+        hintPt: "Verbo saber + infinitivo: 'Eu sei cozinhar...'",
+        hintEn: "Cooking proficiency"
+      },
+      {
+        pt: "Você cozinha?",
+        en: "Do you cook?",
+        category: "2. Culinária e Habilidades na Cozinha",
+        hintPt: "Hábito de cozinhar no dia a dia",
+        hintEn: "General habit of cooking"
+      },
+      {
+        pt: "Se você cozinha, qual prato você cozinha com mais frequência?",
+        en: "If you cook, which dish do you cook most often?",
+        category: "2. Culinária e Habilidades na Cozinha",
+        hintPt: "Prato mais frequente feito por você",
+        hintEn: "Most frequent home-cooked dish"
+      },
+      {
+        pt: "Você gosta de cozinhar? Por quê ou por que não?",
+        en: "Do you like to cook? Why or why not?",
+        category: "2. Culinária e Habilidades na Cozinha",
+        hintPt: "Gosto pessoal e justificativa",
+        hintEn: "Cooking preference and explanation"
+      },
+      {
+        pt: "Qual prato você sabe cozinhar melhor?",
+        en: "Which dish do you know how to cook best?",
+        category: "2. Culinária e Habilidades na Cozinha",
+        hintPt: "Sua especialidade na cozinha",
+        hintEn: "Cooking specialty / signature dish"
+      },
+      {
+        pt: "Qual foi a última refeição que você cozinhou para outra pessoa?",
+        en: "What was the last meal you cooked for someone else?",
+        category: "2. Culinária e Habilidades na Cozinha",
+        hintPt: "Pretérito Perfeito: 'A última refeição que cozinhei foi...'",
+        hintEn: "Past experience cooking for others"
+      },
+      {
+        pt: "Quando você está sozinho(a), você sempre cozinha uma refeição?",
+        en: "When you are alone, do you always cook a meal?",
+        category: "2. Culinária e Habilidades na Cozinha",
+        hintPt: "Cozinhar para si mesmo vs. pedir comida",
+        hintEn: "Cooking for oneself"
+      },
+      {
+        pt: "Sua família tem alguma receita especial passada de geração em geração?",
+        en: "Does your family have a special recipe passed down from generation to generation?",
+        category: "2. Culinária e Habilidades na Cozinha",
+        hintPt: "Tradição culinária familiar",
+        hintEn: "Family heirloom recipes"
+      },
+      {
+        pt: "Os utensílios que usamos para comer afetam o tipo ou a forma como preparamos os alimentos?",
+        en: "Do the utensils we use to eat affect the type or way we prepare food?",
+        category: "2. Culinária e Habilidades na Cozinha",
+        hintPt: "Reflexão sobre garfo, colher, hashi, etc.",
+        hintEn: "Utensils impact on culinary habits"
+      },
+      {
+        pt: "O que fazer quando se corta o dedo preparando comida?",
+        en: "What should you do when you cut your finger while preparing food?",
+        category: "2. Culinária e Habilidades na Cozinha",
+        hintPt: "Primeiros socorros na cozinha",
+        hintEn: "First aid for kitchen cuts"
+      },
+      {
+        pt: "O que você pode fazer quando uma espinha de peixe fica presa na garganta?",
+        en: "What can you do when a fishbone gets stuck in your throat?",
+        category: "2. Culinária e Habilidades na Cozinha",
+        hintPt: "Remédios caseiros ou conselho médico",
+        hintEn: "Remedies for stuck fishbone"
+      },
+
+      // ==========================================
+      // SEÇÃO 3: COZINHAS DO MUNDO E PREFERÊNCIAS
+      // ==========================================
+      {
+        pt: "De qual país você mais gosta da comida?",
+        en: "Which country's food do you like the most?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Cozinha internacional favorita",
+        hintEn: "Favorite international cuisine"
+      },
+      {
+        pt: "Você prefere a comida do seu próprio país ou outros tipos de comida?",
+        en: "Do you prefer the food of your own country or other types of food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Comida nativa vs. comida estrangeira",
+        hintEn: "Home country food vs. international"
+      },
+      {
+        pt: "Qual é a comida que você gosta no seu país?",
+        en: "What food do you like in your country?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Pratos típicos favoritos da sua terra",
+        hintEn: "Favorite native foods"
+      },
+      {
+        pt: "O que é uma refeição típica do seu país?",
+        en: "What is a typical meal in your country?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Ex: feijão, arroz, carne e farofa no Brasil",
+        hintEn: "Typical national dish"
+      },
+      {
+        pt: "Você gosta de comida de outros países?",
+        en: "Do you like food from other countries?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Abertura para gastronomia global",
+        hintEn: "Interest in world cuisines"
+      },
+      {
+        pt: "Se você gosta de comida de outros países, de qual você gosta mais?",
+        en: "If you like food from other countries, which one do you like the most?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Eleição da melhor culinária estrangeira",
+        hintEn: "Top foreign food preference"
+      },
+      {
+        pt: "Qual é o seu tipo favorito de comida étnica?",
+        en: "What is your favorite type of ethnic food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Ex: mexicana, indiana, árabe, etc.",
+        hintEn: "Ethnic food preferences"
+      },
+      {
+        pt: "Você gosta de comida tailandesa?",
+        en: "Do you like Thai food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Sabores agridoces e apimentados",
+        hintEn: "Thai cuisine preference"
+      },
+      {
+        pt: "Você gosta de comida chinesa?",
+        en: "Do you like Chinese food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Pratos chineses populares",
+        hintEn: "Chinese cuisine preference"
+      },
+      {
+        pt: "Você gosta de comida espanhola?",
+        en: "Do you like Spanish food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Ex: paella, tapas",
+        hintEn: "Spanish cuisine preference"
+      },
+      {
+        pt: "Você gosta de comida americana?",
+        en: "Do you like American food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Ex: hambúrguer, churrasco BBQ",
+        hintEn: "American food preference"
+      },
+      {
+        pt: "Você gosta de comida moçambicana?",
+        en: "Do you like Mozambican food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Ex: matapa, frango zambeziano",
+        hintEn: "Mozambican food preference"
+      },
+      {
+        pt: "Você gosta de comida francesa?",
+        en: "Do you like French food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Culinária clássica francesa",
+        hintEn: "French cuisine preference"
+      },
+      {
+        pt: "Você gosta de comida italiana?",
+        en: "Do you like Italian food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Ex: massas, risotos, lasanhas",
+        hintEn: "Italian cuisine preference"
+      },
+      {
+        pt: "O que você acha da comida chinesa?",
+        en: "What do you think of Chinese food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Opinião pessoal: 'Eu acho que...'",
+        hintEn: "Opinion on Chinese cuisine"
+      },
+      {
+        pt: "O que você acha da comida americana?",
+        en: "What do you think of American food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Opinião pessoal sobre comida dos EUA",
+        hintEn: "Opinion on American cuisine"
+      },
+      {
+        pt: "O que você acha da comida britânica?",
+        en: "What do you think of British food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Ex: fish and chips, chá da tarde",
+        hintEn: "Opinion on British cuisine"
+      },
+      {
+        pt: "O que você acha da comida indiana?",
+        en: "What do you think of Indian food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Pratos bem temperados com curry e especiarias",
+        hintEn: "Opinion on Indian food"
+      },
+      {
+        pt: "O que você acha da comida grega?",
+        en: "What do you think of Greek food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Culinária mediterrânea: azeite, queijo feta",
+        hintEn: "Opinion on Greek food"
+      },
+      {
+        pt: "Você gosta de comida japonesa?",
+        en: "Do you like Japanese food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Apreciação de sushi, sashimi, ramen",
+        hintEn: "Japanese cuisine interest"
+      },
+      {
+        pt: "Que tipo de comida japonesa você gosta?",
+        en: "What kind of Japanese food do you like?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Pratos específicos da cozinha japonesa",
+        hintEn: "Specific Japanese dishes"
+      },
+      {
+        pt: "Que tipos de alimentos os japoneses comem?",
+        en: "What types of food do Japanese people eat?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Peixe cru, arroz, algas, sopa de missô",
+        hintEn: "Japanese dietary staples"
+      },
+      {
+        pt: "Que tipos de alimentos os chineses comem?",
+        en: "What types of food do Chinese people eat?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Vegetais salteados, arroz, macarrão, dim sum",
+        hintEn: "Chinese dietary staples"
+      },
+      {
+        pt: "O que os chineses comem no almoço?",
+        en: "What do Chinese people eat for lunch?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Pratos típicos de almoço na China",
+        hintEn: "Typical Chinese lunch"
+      },
+      {
+        pt: "Há algum alimento que você realmente não goste de comer?",
+        en: "Is there any food that you really don't like to eat?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Aversões alimentares",
+        hintEn: "Food dislikes"
+      },
+      {
+        pt: "Qual comida você odeia? Por que você a odeia?",
+        en: "Which food do you hate? Why do you hate it?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Alimento detestado e o motivo (textura, sabor)",
+        hintEn: "Hated foods and reasoning"
+      },
+      {
+        pt: "Quais comidas você odeia?",
+        en: "Which foods do you hate?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Lista de comidas rejeitadas",
+        hintEn: "List of hated foods"
+      },
+      {
+        pt: "De qual comida deste país você menos gosta?",
+        en: "Which food from this country do you like the least?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Prato local menos apreciado",
+        hintEn: "Least favorite local food"
+      },
+      {
+        pt: "Quais comidas você ama?",
+        en: "Which foods do you love?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Suas maiores paixões gastronômicas",
+        hintEn: "Foods you love"
+      },
+      {
+        pt: "Qual é uma das suas comidas favoritas?",
+        en: "What is one of your favorite foods?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Destaque de prato favorito",
+        hintEn: "One top favorite meal"
+      },
+      {
+        pt: "Qual é a sua comida favorita? Por favor, descreva sua comida favorita.",
+        en: "What is your favorite food? Please describe your favorite food.",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Exercício de descrição rica (sabor, aroma, textura)",
+        hintEn: "Describing flavor, texture and aroma"
+      },
+      {
+        pt: "Que alimentos você provou e nunca esquecerá pelo resto da vida?",
+        en: "What foods have you tasted that you will never forget for the rest of your life?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Experiências gastronômicas memoráveis",
+        hintEn: "Unforgettable food experiences"
+      },
+      {
+        pt: "Qual é a coisa mais incomum ou estranha que você já comeu?",
+        en: "What is the most unusual or strangest thing you have ever eaten?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Comidas exóticas ou inusitadas",
+        hintEn: "Most exotic or weird foods"
+      },
+      {
+        pt: "Essa comida estranha tinha gosto bom ou ruim?",
+        en: "Did that strange food taste good or bad?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Avaliação do sabor: gostoso ou horrível",
+        hintEn: "Taste evaluation: good or bad"
+      },
+      {
+        pt: "Você já provou comida africana?",
+        en: "Have you ever tasted African food?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Experiência com culinárias do continente africano",
+        hintEn: "Experience with African cuisines"
+      },
+      {
+        pt: "Há algum alimento que traga memórias especiais para você? Quais são?",
+        en: "Is there any food that brings special memories for you? Which ones?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Memória afetiva ligada à comida",
+        hintEn: "Food and nostalgic memories"
+      },
+      {
+        pt: "Você gosta de pizza?",
+        en: "Do you like pizza?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Pergunta simples sobre pizza",
+        hintEn: "Pizza preference"
+      },
+      {
+        pt: "Qual é a sua cobertura de pizza favorita?",
+        en: "What is your favorite pizza topping?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Sabores: calabresa, margherita, quatro queijos",
+        hintEn: "Favorite pizza toppings"
+      },
+      {
+        pt: "Com que frequência você come pizza em um restaurante?",
+        en: "How often do you eat pizza at a restaurant?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Frequência em pizzarias",
+        hintEn: "Eating pizza out frequency"
+      },
+      {
+        pt: "Com que frequência você pede pizza para entregar em casa?",
+        en: "How often do you order pizza for delivery?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Frequência de delivery de pizza",
+        hintEn: "Pizza delivery frequency"
+      },
+      {
+        pt: "Há pizzarias perto da sua casa que entregam pizzas?",
+        en: "Are there pizza places near your house that deliver pizza?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Verbo haver no sentido de existir",
+        hintEn: "Local delivery availability"
+      },
+      {
+        pt: "O que você gosta de beber com sua pizza?",
+        en: "What do you like to drink with your pizza?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Acompanhamentos: refrigerante, vinho, suco, cerveja",
+        hintEn: "Drinks paired with pizza"
+      },
+      {
+        pt: "Você sabe fazer pizza?",
+        en: "Do you know how to make pizza?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Habilidade de fazer massa e assar",
+        hintEn: "Pizza making skills"
+      },
+      {
+        pt: "Você sabe quem inventou a pizza?",
+        en: "Do you know who invented pizza?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Conhecimento histórico sobre a pizza (Itália/Grécia)",
+        hintEn: "History of pizza"
+      },
+      {
+        pt: "Por que a pizza é popular?",
+        en: "Why is pizza popular?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Praticidade, sabor compartilhado",
+        hintEn: "Reasons for pizza popularity"
+      },
+      {
+        pt: "Você já pediu entrega de pizza?",
+        en: "Have you ever ordered pizza delivery?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Experiência com pedidos por telefone ou aplicativo",
+        hintEn: "Ordering pizza delivery experience"
+      },
+      {
+        pt: "Como você faz pizza em casa?",
+        en: "How do you make pizza at home?",
+        category: "3. Cozinhas do Mundo e Preferências",
+        hintPt: "Passo a passo da receita caseira",
+        hintEn: "Step-by-step homemade pizza"
+      },
+
+      // ==========================================
+      // SEÇÃO 4: SAÚDE, NUTRIÇÃO E HÁBITOS
+      // ==========================================
+      {
+        pt: "Você é vegetariano(a)?",
+        en: "Are you a vegetarian?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Dieta sem carne",
+        hintEn: "Vegetarian lifestyle"
+      },
+      {
+        pt: "Você acha que uma dieta vegetariana é melhor do que uma dieta que inclui carne?",
+        en: "Do you think a vegetarian diet is better than a diet that includes meat?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Comparação entre dietas",
+        hintEn: "Comparing diets and health"
+      },
+      {
+        pt: "Você se preocupa com a sua ingestão calórica diária ao escolher o que comer?",
+        en: "Do you worry about your daily calorie intake when choosing what to eat?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Atenção a calorias diárias",
+        hintEn: "Calorie counting habits"
+      },
+      {
+        pt: "Você acha que é bom contar calorias quando está comendo?",
+        en: "Do you think it's good to count calories when you are eating?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Opinião sobre dietas rígidas",
+        hintEn: "Opinion on calorie counting"
+      },
+      {
+        pt: "Quantas calorias a maioria das pessoas precisa por dia?",
+        en: "How many calories do most people need per day?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Média em torno de 2.000 kcal",
+        hintEn: "Nutritional baseline knowledge"
+      },
+      {
+        pt: "Quantas calorias tem um hambúrguer?",
+        en: "How many calories are in a hamburger?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Estimativa de calorias de fast-food",
+        hintEn: "Hamburger calorie estimate"
+      },
+      {
+        pt: "Um hambúrguer tem mais ou menos calorias do que uma casquinha de sorvete?",
+        en: "Does a hamburger have more or fewer calories than an ice cream cone?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Comparação de densidade calórica",
+        hintEn: "Calorie comparison: burger vs. ice cream"
+      },
+      {
+        pt: "Você lê as informações nutricionais dos alimentos que compra?",
+        en: "Do you read the nutritional information of the foods you buy?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Hábito de ler rótulos e tabelas nutricionais",
+        hintEn: "Reading food labels"
+      },
+      {
+        pt: "Você conhece o valor nutricional das coisas que come todos os dias?",
+        en: "Do you know the nutritional value of the things you eat every day?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Consciência alimentar diária",
+        hintEn: "Daily nutritional awareness"
+      },
+      {
+        pt: "Você acredita que \"somos o que comemos\"?",
+        en: "Do you believe that \"we are what we eat\"?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Ditado popular e impacto na saúde física e mental",
+        hintEn: "Philosophy of nutrition"
+      },
+      {
+        pt: "Quais são alguns alimentos considerados não saudáveis?",
+        en: "What are some foods considered unhealthy?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Alimentos ultraprocessados, refrigerantes, frituras",
+        hintEn: "Unhealthy food examples"
+      },
+      {
+        pt: "Quais são alguns alimentos que você sabe que são saudáveis para o seu corpo?",
+        en: "What are some foods you know are healthy for your body?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Frutas, grãos integrais, folhas verdes",
+        hintEn: "Healthy food examples"
+      },
+      {
+        pt: "Que tipo de comida você acha menos saudável?",
+        en: "What kind of food do you think is least healthy?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Comidas com excesso de gordura e açúcar",
+        hintEn: "Least healthy foods"
+      },
+      {
+        pt: "Que tipo de comida você acha mais saudável?",
+        en: "What kind of food do you think is most healthy?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Comida natural e balanceada",
+        hintEn: "Most healthy foods"
+      },
+      {
+        pt: "Com que frequência você come comida não saudável?",
+        en: "How often do you eat unhealthy food?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Frequência de 'junk food'",
+        hintEn: "Frequency of junk food intake"
+      },
+      {
+        pt: "O que você acha do atendimento \"super-size\" (porções gigantes)?",
+        en: "What do you think of \"super-size\" portions?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Opinião sobre porções extragrandes",
+        hintEn: "Thoughts on giant portions"
+      },
+      {
+        pt: "As porções de comida são grandes demais para a nossa saúde?",
+        en: "Are food portions too big for our health?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Discussão sobre tamanho de porções e saúde pública",
+        hintEn: "Portion size and health debate"
+      },
+      {
+        pt: "Você gosta de frituras?",
+        en: "Do you like fried foods?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Ex: pastel, batata frita, salgadinhos",
+        hintEn: "Preference for fried food"
+      },
+      {
+        pt: "Você toma comprimidos de vitaminas ou suplementos?",
+        en: "Do you take vitamin pills or supplements?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Suplementação nutricional",
+        hintEn: "Vitamins and supplements habit"
+      },
+      {
+        pt: "Você já fez algum regime ou dieta? Se sim, quanto tempo ficou nela?",
+        en: "Have you ever been on a diet? If so, how long were you on it?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Experiência prévia com dietas de emagrecimento",
+        hintEn: "Dieting experiences"
+      },
+      {
+        pt: "Por que as dietas costumam durar pouco tempo?",
+        en: "Why do diets usually last for a short time?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Dificuldades de adesão e efeito sanfona",
+        hintEn: "Why diets fail quickly"
+      },
+      {
+        pt: "Por que as pessoas não conseguem parar de comer?",
+        en: "Why can't people stop eating?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Aspectos psicológicos e apetite",
+        hintEn: "Compulsive eating / psychological factors"
+      },
+      {
+        pt: "Por que você acha que a obesidade está se tornando um problema tão grande nos Estados Unidos e no mundo todo?",
+        en: "Why do you think obesity is becoming such a big problem in the United States and worldwide?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Sedentarismo, alimentos processados e estilo de vida moderno",
+        hintEn: "Global obesity crisis discussion"
+      },
+      {
+        pt: "Você tem alguma alergia alimentar?",
+        en: "Do you have any food allergies?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Glúten, lactose, frutos do mar, amendoim",
+        hintEn: "Food allergies"
+      },
+      {
+        pt: "Você já comeu algo que lhe fez mal?",
+        en: "Have you ever eaten something that made you sick?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Intoxicação alimentar ou mal-estar",
+        hintEn: "Food poisoning or discomfort"
+      },
+      {
+        pt: "Cite um tempero ou condimento que faça bem para a saúde.",
+        en: "Name a seasoning or spice that is good for your health.",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Ex: açafrão/cúrcuma, alho, gengibre, orégano",
+        hintEn: "Healthy spices and seasonings"
+      },
+      {
+        pt: "Você ora antes de cada refeição?",
+        en: "Do you pray before each meal?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Hábito religioso ou de gratidão à mesa",
+        hintEn: "Praying before meals"
+      },
+      {
+        pt: "Você já comeu carne de cachorro?",
+        en: "Have you ever eaten dog meat?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Diferenças culturais em torno do consumo de animais",
+        hintEn: "Cultural differences in meat consumption"
+      },
+      {
+        pt: "Você gosta de comer bucho ou intestinos?",
+        en: "Do you like to eat tripe or intestines?",
+        category: "4. Saúde, Nutrição e Hábitos",
+        hintPt: "Miúdos e pratos tradicionais (ex: dobradinha, sarapatel)",
+        hintEn: "Eating offal/tripe dishes"
+      },
+
+      // ==========================================
+      // SEÇÃO 5: RESTAURANTES, FAST-FOOD E EXPERIÊNCIAS
+      // ==========================================
+      {
+        pt: "Você costuma comer fora com frequência?",
+        en: "Do you usually eat out often?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Hábito de frequentar restaurantes",
+        hintEn: "Eating out habits"
+      },
+      {
+        pt: "Com que frequência você come em um restaurante?",
+        en: "How often do you eat at a restaurant?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Frequência mensal ou semanal",
+        hintEn: "Frequency of visiting restaurants"
+      },
+      {
+        pt: "Onde você costuma ir quando come fora?",
+        en: "Where do you usually go when you eat out?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Bistrôs, lanchonetes, restaurantes por quilo",
+        hintEn: "Favorite dining places"
+      },
+      {
+        pt: "Com quem você costuma ir a restaurantes?",
+        en: "Who do you usually go to restaurants with?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Com amigos, família ou sozinho(a)",
+        hintEn: "Dining company"
+      },
+      {
+        pt: "Quanto você costuma gastar quando come fora?",
+        en: "How much do you usually spend when you eat out?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Valores médios de refeições",
+        hintEn: "Typical restaurant budget"
+      },
+      {
+        pt: "O que você geralmente gosta de beber quando sai?",
+        en: "What do you usually like to drink when you go out?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Drinks, sucos, refrigerante ou cerveja",
+        hintEn: "Beverages ordered when going out"
+      },
+      {
+        pt: "Com que frequência você sai para beber?",
+        en: "How often do you go out for drinks?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Frequência de passeios em bares/pubs",
+        hintEn: "Social drinking frequency"
+      },
+      {
+        pt: "Qual é a sua bebida favorita quando você sai?",
+        en: "What is your favorite drink when you go out?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Bebida preferida para socializar",
+        hintEn: "Go-to social drink"
+      },
+      {
+        pt: "Você prefere comer em um restaurante ou em casa?",
+        en: "Do you prefer eating at a restaurant or at home?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Conforto do lar vs. comodidade de ser servido",
+        hintEn: "Eating out vs. eating at home"
+      },
+      {
+        pt: "Qual é o seu restaurante de fast-food favorito?",
+        en: "What is your favorite fast-food restaurant?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Redes conhecidas de fast-food",
+        hintEn: "Favorite fast-food chains"
+      },
+      {
+        pt: "Você gosta de comer em restaurantes de fast-food?",
+        en: "Do you like eating at fast-food restaurants?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Apreciação pessoal de fast-food",
+        hintEn: "Enjoyment of fast food"
+      },
+      {
+        pt: "Com que frequência você come em um restaurante de fast-food?",
+        en: "How often do you eat at a fast-food restaurant?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Frequência de idas a redes de fast-food",
+        hintEn: "Fast-food visit frequency"
+      },
+      {
+        pt: "De quais restaurantes de fast-food você gosta?",
+        en: "Which fast-food restaurants do you like?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Nomes e marcas de fast-food",
+        hintEn: "Fast-food brands liked"
+      },
+      {
+        pt: "Em quais restaurantes de fast-food você come com mais frequência?",
+        en: "Which fast-food restaurants do you eat at most often?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Onde você vai com mais frequência",
+        hintEn: "Most frequented fast-food chain"
+      },
+      {
+        pt: "Os restaurantes de fast-food deveriam servir comida mais saudável?",
+        en: "Should fast-food restaurants serve healthier food?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Discussão sobre o cardápio e opções verdes",
+        hintEn: "Healthy options at fast-food chains"
+      },
+      {
+        pt: "Você acha que fast-food, refrigerante e doces deveriam ser vendidos nas cafeterias escolares?",
+        en: "Do you think fast food, soda, and sweets should be sold in school cafeterias?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Debate sobre saúde infantil nas escolas",
+        hintEn: "School cafeteria nutrition policy"
+      },
+      {
+        pt: "Você tem uma cafeteria favorita?",
+        en: "Do you have a favorite coffee shop / café?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Lugares aconchegantes para tomar café",
+        hintEn: "Favorite cafés"
+      },
+      {
+        pt: "Se você tem uma cafeteria favorita, onde ela fica e por que você gosta dela?",
+        en: "If you have a favorite coffee shop, where is it and why do you like it?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Localização e ambiente agradável",
+        hintEn: "Café location and atmosphere"
+      },
+      {
+        pt: "Qual é o lugar mais barato para comer que você conhece?",
+        en: "What is the cheapest place to eat that you know?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Opções econômicas para refeição",
+        hintEn: "Cheapest dining spots"
+      },
+      {
+        pt: "Quanto custa uma refeição no lugar mais barato que você conhece e onde ele fica?",
+        en: "How much does a meal cost at the cheapest place you know, and where is it?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Preço em moeda local e localização",
+        hintEn: "Budget meal price and location"
+      },
+      {
+        pt: "Com que frequência você vai ao restaurante mais barato que conhece?",
+        en: "How often do you go to the cheapest restaurant you know?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Frequência de visitas ao local econômico",
+        hintEn: "Frequency of visiting budget spots"
+      },
+      {
+        pt: "Qual foi a refeição mais cara que você já comeu?",
+        en: "What was the most expensive meal you have ever eaten?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Experiência de luxo ou jantar marcante",
+        hintEn: "Most expensive culinary experience"
+      },
+      {
+        pt: "Qual foi o restaurante mais caro em que você já esteve?",
+        en: "What was the most expensive restaurant you have ever been to?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Nome do restaurante sofisticado",
+        hintEn: "Most high-end restaurant visited"
+      },
+      {
+        pt: "O que você comeu, quando foi e com quem você foi ao restaurante mais caro em que já esteve?",
+        en: "What did you eat, when did you go, and who did you go with to the most expensive restaurant you've visited?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Pretérito Perfeito detalhado",
+        hintEn: "Detailed storytelling in simple past"
+      },
+      {
+        pt: "Quanto custa jantar em um hotel no seu país?",
+        en: "How much does it cost to have dinner at a hotel in your country?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Preços de restaurantes de hotéis",
+        hintEn: "Hotel dining pricing"
+      },
+      {
+        pt: "Qual restaurante nesta cidade você recomenda e por que é um bom lugar?",
+        en: "Which restaurant in this city do you recommend and why is it a good place?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Recomendação local e pontos fortes (comida, serviço)",
+        hintEn: "Local dining recommendation"
+      },
+      {
+        pt: "Quanto custa uma refeição no restaurante que você recomenda?",
+        en: "How much does a meal cost at the restaurant you recommend?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Faixa de preço média da recomendação",
+        hintEn: "Price range of recommended spot"
+      },
+      {
+        pt: "Qual é o seu restaurante favorito e por que você gosta dele?",
+        en: "What is your favorite restaurant and why do you like it?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Seu local predileto para comer fora",
+        hintEn: "All-time favorite restaurant"
+      },
+      {
+        pt: "Qual é o melhor restaurante em que você já esteve e por que você gostou dele?",
+        en: "What is the best restaurant you have ever been to and why did you like it?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "A melhor experiência gastronômica da sua vida",
+        hintEn: "Best restaurant ever visited"
+      },
+      {
+        pt: "Quando foi a última vez que você comeu em um restaurante?",
+        en: "When was the last time you ate at a restaurant?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Pretérito Perfeito: 'A última vez foi...'",
+        hintEn: "Time reference in the past"
+      },
+      {
+        pt: "Quando foi a última vez que você jantou com sua mãe?",
+        en: "When was the last time you had dinner with your mother?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Momento afetuoso em família",
+        hintEn: "Family dinner memory"
+      },
+      {
+        pt: "Você já vai a restaurantes indianos?",
+        en: "Do you already go to Indian restaurants?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Hábito de frequentar culinária indiana",
+        hintEn: "Visiting Indian restaurants"
+      },
+      {
+        pt: "Quanto se deve dar de gorjeta ao garçom em um restaurante?",
+        en: "How much tip should be given to a waiter in a restaurant?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Cultura de gorjeta (10% no Brasil vs. 15-20% nos EUA)",
+        hintEn: "Tipping culture rules"
+      },
+      {
+        pt: "Em que tipo de restaurantes você não daria gorjeta?",
+        en: "At what kind of restaurants would you not leave a tip?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Ex: self-service, lanchonete de balcão",
+        hintEn: "Circumstances with no tipping"
+      },
+      {
+        pt: "Você já encontrou algo nojento na sua comida?",
+        en: "Have you ever found something disgusting in your food?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Experiências desagradáveis em restaurantes",
+        hintEn: "Disgusting restaurant findings"
+      },
+      {
+        pt: "Você já mandou devolver comida em um restaurante?",
+        en: "Have you ever sent food back at a restaurant?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Comida crua, fria ou errada",
+        hintEn: "Returning food to the kitchen"
+      },
+      {
+        pt: "Você já saiu de um restaurante sem pagar?",
+        en: "Have you ever walked out of a restaurant without paying?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Acidentalmente ou por esquecimento",
+        hintEn: "Walking out without paying"
+      },
+      {
+        pt: "Você já participou de um almoço comunitário (pot-luck)?",
+        en: "Have you ever participated in a potluck lunch?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Evento onde cada pessoa traz um prato",
+        hintEn: "Potluck experience"
+      },
+      {
+        pt: "O que você levaria para um almoço comunitário?",
+        en: "What would you bring to a potluck lunch?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Futuro do Pretérito: 'Eu levaria...'",
+        hintEn: "Hypothetical choice: 'I would bring...'"
+      },
+      {
+        pt: "Você gosta de brunch?",
+        en: "Do you like brunch?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Refeição entre o café e o almoço no fim de semana",
+        hintEn: "Brunch preference"
+      },
+      {
+        pt: "Se você estivesse no corredor da morte, o que pediria para sua última refeição?",
+        en: "If you were on death row, what would you ask for as your last meal?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Condicional: 'Se eu estivesse..., eu pediria...'",
+        hintEn: "Ultimate comfort meal hypothetical"
+      },
+      {
+        pt: "Se você fosse convidado(a) para um jantar elegante com o presidente ou uma celebridade, o que faria para se preparar?",
+        en: "If you were invited to an elegant dinner with the president or a celebrity, what would you do to prepare?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Etiqueta, vestuário e preparação",
+        hintEn: "Formal dinner preparation"
+      },
+      {
+        pt: "Você gosta de experimentar novos alimentos?",
+        en: "Do you like trying new foods?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Aventureiro(a) gastronômico(a)",
+        hintEn: "Food adventurousness"
+      },
+      {
+        pt: "Quais novos alimentos você experimentou este mês?",
+        en: "What new foods have you tried this month?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Descobertas culinárias recentes",
+        hintEn: "Recent culinary discoveries"
+      },
+      {
+        pt: "Qual é a comida mais estranha que você já experimentou?",
+        en: "What is the strangest food you have ever tried?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Comida bizarra ou exótica provada",
+        hintEn: "Strangest food experienced"
+      },
+      {
+        pt: "Se você estivesse morando no exterior, qual seria a comida de casa que você mais sentiria falta?",
+        en: "If you were living abroad, what food from home would you miss the most?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Saudades da culinária nativa (saudade gastronômica)",
+        hintEn: "Homesickness and native food"
+      },
+      {
+        pt: "Você pensa nas cores ao preparar uma refeição?",
+        en: "Do you think about colors when preparing a meal?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Apresentação visual e prato colorido",
+        hintEn: "Aesthetic presentation and colorful dishes"
+      },
+      {
+        pt: "Há algum alimento que você não comia quando criança e que come hoje?",
+        en: "Is there any food you didn't use to eat as a child that you eat today?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Pretérito Imperfeito: 'Eu não comia..., mas hoje eu como...'",
+        hintEn: "Palate evolution over time"
+      },
+      {
+        pt: "Com que frequência você vai fazer compras de supermercado?",
+        en: "How often do you go grocery shopping?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Rotina de compras da casa",
+        hintEn: "Supermarket shopping routine"
+      },
+      {
+        pt: "Você acha que a comida define uma cultura? Se sim, como?",
+        en: "Do you think food defines a culture? If so, how?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Relação profunda entre identidade cultural e culinária",
+        hintEn: "Cultural identity through food"
+      },
+      {
+        pt: "Você nota alguma diferença na forma como a comida é servida à mesa quando viaja?",
+        en: "Do you notice any difference in the way food is served at the table when you travel?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Observações culturais em viagens",
+        hintEn: "Food presentation cultural differences"
+      },
+      {
+        pt: "Como a etiqueta de comer junto no seu país difere de outros países?",
+        en: "How does dining etiquette in your country differ from other countries?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Comportamento, conversas e formalidades à mesa",
+        hintEn: "Cross-cultural table manners"
+      },
+      {
+        pt: "Que comida você gostaria de ver em um restaurante neste país?",
+        en: "What food would you like to see in a restaurant in this country?",
+        category: "5. Restaurantes, Fast-Food e Experiências",
+        hintPt: "Desejos culinários não encontrados localmente",
+        hintEn: "Dishes missing in local restaurants"
+      }
+    ];
+
+    let currentDeck = [...fullDeck];
+    let currentIndex = 0;
+    let isPtToEn = true;
+    let isFlipped = false;
+
+    const flashcardEl = document.getElementById("flashcard");
+    const frontTextEl = document.getElementById("front-text");
+    const frontHintEl = document.getElementById("front-hint");
+    const frontCategoryEl = document.getElementById("front-category");
+    const frontFlagEl = document.getElementById("front-flag");
+
+    const backTextEl = document.getElementById("back-text");
+    const backHintEl = document.getElementById("back-hint");
+    const backCategoryEl = document.getElementById("back-category");
+    const backFlagEl = document.getElementById("back-flag");
+
+    const progressBarEl = document.getElementById("progress-bar");
+    const cardCounterEl = document.getElementById("card-counter");
+    const langDirectionLabelEl = document.getElementById("lang-direction-label");
+
+    function renderCard() {
+      isFlipped = false;
+      flashcardEl.classList.remove("is-flipped");
+
+      const item = currentDeck[currentIndex];
+      if (!item) return;
+
+      if (isPtToEn) {
+        frontTextEl.textContent = item.pt;
+        frontHintEl.textContent = item.hintPt;
+        frontCategoryEl.textContent = item.category;
+        frontFlagEl.textContent = "🇧🇷 Português";
+
+        backTextEl.textContent = item.en;
+        backHintEl.textContent = item.hintEn;
+        backCategoryEl.textContent = item.category;
+        backFlagEl.textContent = "🇺🇸 Inglês";
+      } else {
+        frontTextEl.textContent = item.en;
+        frontHintEl.textContent = item.hintEn;
+        frontCategoryEl.textContent = item.category;
+        frontFlagEl.textContent = "🇺🇸 Inglês";
+
+        backTextEl.textContent = item.pt;
+        backHintEl.textContent = item.hintPt;
+        backCategoryEl.textContent = item.category;
+        backFlagEl.textContent = "🇧🇷 Português";
+      }
+
+      const total = currentDeck.length;
+      cardCounterEl.textContent = `${currentIndex + 1} de ${total}`;
+      progressBarEl.style.width = `${((currentIndex + 1) / total) * 100}%`;
+    }
+
+    function flipCard() {
+      isFlipped = !isFlipped;
+      flashcardEl.classList.toggle("is-flipped", isFlipped);
+    }
+
+    function nextCard() {
+      if (currentIndex < currentDeck.length - 1) {
+        currentIndex++;
+      } else {
+        currentIndex = 0;
+      }
+      renderCard();
+    }
+
+    function prevCard() {
+      if (currentIndex > 0) {
+        currentIndex--;
+      } else {
+        currentIndex = currentDeck.length - 1;
+      }
+      renderCard();
+    }
+
+    function toggleLanguageDirection() {
+      isPtToEn = !isPtToEn;
+      langDirectionLabelEl.textContent = isPtToEn 
+        ? "🇧🇷 Português ➔ 🇺🇸 Inglês" 
+        : "🇺🇸 Inglês ➔ 🇧🇷 Português";
+      renderCard();
+    }
+
+    function filterCategory() {
+      const selected = document.getElementById("category-select").value;
+      if (selected === "ALL") {
+        currentDeck = [...fullDeck];
+      } else {
+        currentDeck = fullDeck.filter(item => item.category === selected);
+      }
+      currentIndex = 0;
+      renderCard();
+    }
+
+    function shuffleCards() {
+      for (let i = currentDeck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [currentDeck[i], currentDeck[j]] = [currentDeck[j], currentDeck[i]];
+      }
+      currentIndex = 0;
+      renderCard();
+    }
+
+    function toggleModal(show) {
+      document.getElementById("info-modal").style.display = show ? "flex" : "none";
+    }
+
+    function speakText(e, face) {
+      e.stopPropagation();
+      if (!('speechSynthesis' in window)) {
+        alert("Áudio não suportado neste navegador.");
+        return;
+      }
+      const item = currentDeck[currentIndex];
+      let textToSpeak = "";
+      let lang = "pt-BR";
+
+      if (face === 'front') {
+        textToSpeak = isPtToEn ? item.pt : item.en;
+        lang = isPtToEn ? "pt-BR" : "en-US";
+      } else {
+        textToSpeak = isPtToEn ? item.en : item.pt;
+        lang = isPtToEn ? "en-US" : "pt-BR";
+      }
+
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = lang;
+      utterance.rate = 0.9;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        flipCard();
+      } else if (e.code === "ArrowRight") {
+        nextCard();
+      } else if (e.code === "ArrowLeft") {
+        prevCard();
+      }
+    });
+
+    renderCard();
+  </script>
+</body>
+</html>
